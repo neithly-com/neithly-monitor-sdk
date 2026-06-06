@@ -1,0 +1,11 @@
+import { defineConfig } from 'tsup';
+import { basePreset } from '../../tsup.config.base';
+
+export default defineConfig(
+  basePreset({
+    entry: { index: 'src/index.ts' },
+    target: 'es2020',
+    platform: 'browser',
+    external: ['react', 'react-dom', 'react-router-dom'],
+  }),
+);

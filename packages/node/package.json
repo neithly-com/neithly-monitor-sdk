@@ -1,0 +1,47 @@
+{
+  "name": "@neithly-com/monitor-node",
+  "version": "0.0.0",
+  "description": "Node SDK for neithly-monitor — Sentry-shaped API wrapping @opentelemetry/sdk-node with Express / Fastify / NestJS bindings.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@neithly-com/monitor-core": "workspace:*",
+    "@nestjs/common": "^11.1.24",
+    "@nestjs/core": "^11.1.24",
+    "@opentelemetry/instrumentation": "^0.218.0",
+    "@opentelemetry/instrumentation-http": "^0.218.0",
+    "fastify": "^5.8.5",
+    "fastify-plugin": "^5.1.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/platform-express": "^11.1.24",
+    "@nestjs/testing": "^11.1.24",
+    "@types/express": "^5.0.6",
+    "@types/supertest": "^7.2.0",
+    "express": "^5.2.1",
+    "supertest": "^7.2.2"
+  }
+}

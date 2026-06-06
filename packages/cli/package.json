@@ -1,0 +1,39 @@
+{
+  "name": "@neithly-com/monitor-cli",
+  "version": "0.0.0",
+  "description": "CLI for neithly-monitor — `monitor releases create` + `monitor sourcemaps upload` for CI pipelines.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "monitor": "./dist/cli.cjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@neithly-com/monitor-core": "workspace:*",
+    "commander": "^12.1.0",
+    "cosmiconfig": "^9.0.1",
+    "globby": "^16.2.0",
+    "ora": "^9.4.0",
+    "p-limit": "^7.3.0"
+  }
+}
