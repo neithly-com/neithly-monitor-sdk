@@ -1,6 +1,6 @@
 {
   "name": "@neithly-com/monitor-browser",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Browser SDK for neithly-monitor — fetch-based OTLP exporter, Sentry-shaped public API, window.onerror + fetch / XHR / console instrumentation.",
   "license": "UNLICENSED",
   "type": "module",

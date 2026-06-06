@@ -1,6 +1,6 @@
 {
   "name": "@neithly-com/monitor-cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "CLI for neithly-monitor — `monitor releases create` + `monitor sourcemaps upload` for CI pipelines.",
   "license": "UNLICENSED",
   "type": "module",
