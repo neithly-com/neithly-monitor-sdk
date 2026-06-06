@@ -1,0 +1,11 @@
+{
+  "name": "qa-integration",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@neithly-com/monitor-browser": "workspace:*",
+    "@neithly-com/monitor-core": "workspace:*",
+    "@neithly-com/monitor-node": "workspace:*"
+  }
+}

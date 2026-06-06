@@ -206,6 +206,18 @@ importers:
         specifier: ^19.2.7
         version: 19.2.7(react@19.2.7)
 
+  qa-integration:
+    dependencies:
+      '@neithly-com/monitor-browser':
+        specifier: workspace:*
+        version: link:../packages/browser
+      '@neithly-com/monitor-core':
+        specifier: workspace:*
+        version: link:../packages/core
+      '@neithly-com/monitor-node':
+        specifier: workspace:*
+        version: link:../packages/node
+
 packages:
 
   '@adobe/css-tools@4.5.0':
