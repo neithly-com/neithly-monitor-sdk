@@ -29,6 +29,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@neithly-com/monitor-core": "workspace:*"
+    "@neithly-com/monitor-core": "workspace:*",
+    "commander": "^12.1.0",
+    "cosmiconfig": "^9.0.1",
+    "globby": "^16.2.0",
+    "ora": "^9.4.0",
+    "p-limit": "^7.3.0"
   }
 }
