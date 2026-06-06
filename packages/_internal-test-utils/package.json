@@ -1,0 +1,24 @@
+{
+  "name": "@neithly-com/internal-test-utils",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Internal-only test helpers shared across @neithly-com/monitor-* package specs (mock OTLP collector, fixture builders). NEVER published.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@neithly-com/monitor-core": "workspace:*"
+  }
+}
