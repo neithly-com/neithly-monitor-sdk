@@ -1,0 +1,22 @@
+{
+  "name": "express-example-node",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Minimal Express + @neithly-com/monitor-node integration example.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "start": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "@neithly-com/monitor-node": "workspace:*",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^20.16.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.2"
+  }
+}

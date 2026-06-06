@@ -1,0 +1,36 @@
+#1  Epic: Monorepo bootstrap
+#2  Feature: Workspace + TypeScript baseline
+#3  chore(repo): scaffold pnpm workspace + per-package tsconfig
+#4  chore(repo): ESLint flat config + prettier shared across packages
+#5  chore(repo): root README + per-package README stubs
+#6  Feature: Build + test pipeline
+#7  chore(build): tsup dual ESM/CJS + .d.ts per package
+#8  chore(test): vitest workspace + shared setup
+#9  chore(release): changesets config + CHANGELOG generation
+#10  Feature: CI / publishing
+#11  ci(repo): GitHub Actions — lint + typecheck + test matrix on PR
+#12  ci(repo): GitHub Actions — publish to GitHub Packages on tag
+#13  Epic: monitor-core — shared transport + types
+#14  Feature: DSN parsing
+#15  feat(core): parseDsn — accepts nmk_<env>_<hex> + raw 32-hex; rejects malformed w
+#16  test(core): parseDsn — fuzz over malformed inputs + boundary cases
+#17  Feature: Exception shaper
+Traceback (most recent call last):
+  File "C:\Users\wmain\Documents\Claude code\neithly-monitor-sdk\scripts\create-issues.py", line 171, in <module>
+    task_n, _ = make(
+                ~~~~^
+        task["title"], t_body, TYPE_TASK,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        task["priority"], task["effort"], task["impact"],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        parent_number=feat_n,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\wmain\Documents\Claude code\neithly-monitor-sdk\scripts\create-issues.py", line 139, in make
+    print(f"#{number}  {title[:80]}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\wmain\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 40: character maps to <undefined>
