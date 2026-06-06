@@ -1,0 +1,40 @@
+{
+  "name": "@neithly-com/monitor-react",
+  "version": "0.0.0",
+  "description": "React bindings for neithly-monitor — <NeithlyErrorBoundary> + react-router v6 navigation breadcrumbs.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@neithly-com/monitor-browser": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "react-router-dom": ">=6"
+  },
+  "peerDependenciesMeta": {
+    "react-router-dom": {
+      "optional": true
+    }
+  }
+}
