@@ -89,6 +89,12 @@ importers:
         specifier: ^5.4.8
         version: 5.4.21(@types/node@20.19.42)
 
+  packages/_internal-test-utils:
+    dependencies:
+      '@neithly-com/monitor-core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/browser:
     dependencies:
       '@neithly-com/monitor-core':
@@ -189,6 +195,9 @@ importers:
         specifier: ^7.8.2
         version: 7.8.2
     devDependencies:
+      '@neithly-com/internal-test-utils':
+        specifier: workspace:*
+        version: link:../_internal-test-utils
       '@nestjs/platform-express':
         specifier: ^11.1.24
         version: 11.1.24(@nestjs/common@11.1.24(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)
