@@ -36,6 +36,7 @@ import {
 
 init({
   dsn: import.meta.env.VITE_NEITHLY_DSN,
+  serviceName: 'apollo',                       // ← MUST match the project slug
   release: import.meta.env.VITE_GIT_SHA,
 });
 
@@ -46,6 +47,17 @@ window.addEventListener('my-error', (e) => {
   captureException(e);
 });
 ```
+
+> **`serviceName` MUST match the project slug.** The backend's ingest
+> worker silently drops records whose `service.name` resource attribute
+> doesn't equal the project's slug — the SDK still gets `200 {}` from the
+> HTTP layer. The slug is visible in the SPA's admin / project list. See
+> [QA finding 01](https://github.com/neithly-com/neithly-monitor-sdk/blob/dev/docs/findings/01-service-name-mismatch.md).
+
+> **Pin `allowedOrigins` on the DSN to the SPA's host** (e.g.
+> `https://app.example.com`). Browser DSNs without an origin pin will be
+> accepted from any tab; pinning provides a useful guardrail. See
+> [QA finding 03](https://github.com/neithly-com/neithly-monitor-sdk/blob/dev/docs/findings/03-allowed-origins-vs-node.md).
 
 ## API
 

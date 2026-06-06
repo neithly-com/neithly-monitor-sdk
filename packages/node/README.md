@@ -30,6 +30,7 @@ import { init, captureException } from '@neithly-com/monitor-node';
 
 init({
   dsn: process.env.NEITHLY_DSN!,
+  serviceName: 'apollo',          // ← MUST match the project's slug on the backend
   release: process.env.GIT_SHA,
   environment: process.env.NODE_ENV,
 });
@@ -40,6 +41,17 @@ try {
   captureException(err);
 }
 ```
+
+> **`serviceName` MUST match the project slug.** The backend's ingest worker
+> silently drops records whose `service.name` resource attribute doesn't
+> equal the project's slug — the SDK still gets `200 {}` from the HTTP layer.
+> The slug is visible in the SPA's admin / project list. See
+> [QA finding 01](https://github.com/neithly-com/neithly-monitor-sdk/blob/dev/docs/findings/01-service-name-mismatch.md).
+
+> **Server-side DSNs must NOT pin `allowedOrigins`** (Node never sends an
+> `Origin` header). Mint the DSN with an empty allowed-origins list from the
+> backend admin. See
+> [QA finding 03](https://github.com/neithly-com/neithly-monitor-sdk/blob/dev/docs/findings/03-allowed-origins-vs-node.md).
 
 Or via the singleton facade:
 

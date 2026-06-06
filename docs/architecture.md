@@ -136,6 +136,30 @@ The neithly-monitor backend's `/v1/logs` endpoint validates the bearer token aga
 - The exporter retries with the OTel SDK's built-in backoff; on hard failure (4xx that isn't 429) it drops the batch and logs to `console.warn` once. We never block the host app.
 - `flush(timeoutMs)` and `shutdown()` drain queued exporters; tests assert that all in-flight envelopes land before the promise resolves.
 
+## Real-world wire contract (post-v0.1 QA findings)
+
+The end-to-end QA pass on 2026-06-06 (see [`docs/qa/`](./qa/)) surfaced three
+contract details that aren't obvious from the OTel spec or the backend
+README. They are documented here so future SDK work doesn't re-discover them:
+
+1. **`service.name` resource attribute MUST match the project's slug** — the
+   backend's ingest worker silently drops records when this differs, returning
+   `200 {}` to the SDK. Set `init({ serviceName: '<slug>' })` (or pin
+   `service.name` directly on the resource attributes). See
+   [Finding 01](./findings/01-service-name-mismatch.md).
+2. **The DSN bearer is the FULL plaintext** including the `nmk_<env>_` prefix,
+   not just the parsed `publicKey`. Internal SDK state holds the original
+   `input` and uses that as `Authorization: Bearer <input>`. See
+   [Finding 02](./findings/02-dsn-bearer-shape.md).
+3. **DSNs with `allowedOrigins` reject node-side fetches** (Node never sends
+   an `Origin` header). For server-side SDK use, mint the DSN with an empty
+   `allowed_origins` list. The browser SDK never has this problem. See
+   [Finding 03](./findings/03-allowed-origins-vs-node.md).
+
+End-to-end propagation latency (POST → SPA row visible) measured at ~5 s on
+the local stack, driven entirely by the SPA's SSE channel + TanStack Query
+cache invalidation — no manual reload required.
+
 ## Related ADRs
 
 - [ADR-0001 — DSN format `nmk_<env>_<64 hex>`](./adr/0001-dsn-format.md)
