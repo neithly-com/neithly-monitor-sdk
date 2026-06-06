@@ -1,0 +1,39 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`shapeException > walks a 3-deep cause chain with mixed types 1`] = `
+"CustomBoom: custom boom
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+Caused by: TypeError: bad type
+TypeError: bad type
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+Caused by: RangeError: bad index
+RangeError: bad index
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>
+    at <frame>"
+`;

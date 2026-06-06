@@ -24,5 +24,8 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
+  },
+  "devDependencies": {
+    "fast-check": "^3.23.1"
   }
 }
