@@ -43,6 +43,7 @@ export default tseslint.config(
       '**/node_modules/**',
       'examples/**',
       'scripts/**',
+      'qa-integration/**',
       '**/*.config.{ts,mjs,cjs,js}',
     ],
   },
