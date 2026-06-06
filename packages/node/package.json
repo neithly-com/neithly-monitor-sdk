@@ -26,6 +26,22 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@neithly-com/monitor-core": "workspace:*"
+    "@neithly-com/monitor-core": "workspace:*",
+    "@nestjs/common": "^11.1.24",
+    "@nestjs/core": "^11.1.24",
+    "@opentelemetry/instrumentation": "^0.218.0",
+    "@opentelemetry/instrumentation-http": "^0.218.0",
+    "fastify": "^5.8.5",
+    "fastify-plugin": "^5.1.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/platform-express": "^11.1.24",
+    "@nestjs/testing": "^11.1.24",
+    "@types/express": "^5.0.6",
+    "@types/supertest": "^7.2.0",
+    "express": "^5.2.1",
+    "supertest": "^7.2.2"
   }
 }
