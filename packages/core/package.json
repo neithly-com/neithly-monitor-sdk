@@ -1,0 +1,28 @@
+{
+  "name": "@neithly-com/monitor-core",
+  "version": "0.0.0",
+  "description": "Shared core for the neithly-monitor SDK family — DSN parsing, exception shaping, breadcrumb ring, OTLP envelope helpers.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  }
+}
