@@ -1,6 +1,6 @@
 {
   "name": "react-spa-example",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "Minimal Vite + react-router example wired to @neithly-com/monitor-browser + @neithly-com/monitor-react.",
   "license": "UNLICENSED",

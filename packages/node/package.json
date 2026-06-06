@@ -1,6 +1,6 @@
 {
   "name": "@neithly-com/monitor-node",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Node SDK for neithly-monitor — Sentry-shaped API wrapping @opentelemetry/sdk-node with Express / Fastify / NestJS bindings.",
   "license": "UNLICENSED",
   "type": "module",

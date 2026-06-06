@@ -1,6 +1,6 @@
 {
   "name": "@neithly-com/monitor-core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared core for the neithly-monitor SDK family — DSN parsing, exception shaping, breadcrumb ring, OTLP envelope helpers.",
   "license": "UNLICENSED",
   "type": "module",

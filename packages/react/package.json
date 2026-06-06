@@ -1,6 +1,6 @@
 {
   "name": "@neithly-com/monitor-react",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "React bindings for neithly-monitor — <NeithlyErrorBoundary> + react-router v6 navigation breadcrumbs.",
   "license": "UNLICENSED",
   "type": "module",
