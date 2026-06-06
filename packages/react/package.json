@@ -26,15 +26,24 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@neithly-com/monitor-browser": "workspace:*"
+    "@neithly-com/monitor-browser": "workspace:*",
+    "@neithly-com/monitor-core": "workspace:^"
   },
   "peerDependencies": {
     "react": ">=17",
+    "react-dom": "^19.2.7",
     "react-router-dom": ">=6"
   },
   "peerDependenciesMeta": {
     "react-router-dom": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "react-dom": "^19.2.7"
   }
 }
