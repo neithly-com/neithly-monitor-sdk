@@ -1,10 +1,13 @@
 # QA 01 — `@neithly-com/monitor-core` envelope shape
 
-Surface: every pure function in `monitor-core`. No HTTP, no DOM, no Node-only
-globals beyond `Buffer`.
+> Validates every pure function in `monitor-core` — DSN parse, exception shape, scope flatten, OTLP envelope. No HTTP, no DOM, no Node-only globals beyond `Buffer`.
+> **Status:** stable
+> **Owner:** Feature #13 (monitor-core)
+> **Last verified:** 2026-06-06 on PR #122
 
-Script: [`qa-integration/test-core.mjs`](../../qa-integration/test-core.mjs).
-Reproduce with:
+## Setup
+
+Script: [`qa-integration/test-core.mjs`](../../qa-integration/test-core.mjs). Reproduce with:
 
 ```bash
 NEITHLY_DSN="nmk_dev_<64hex>" node qa-integration/test-core.mjs
@@ -31,3 +34,9 @@ NEITHLY_DSN="nmk_dev_<64hex>" node qa-integration/test-core.mjs
 - `shapeException(null)` → wraps into a synthetic `Error('null')`; `exception.type === 'Error'`.
 - `toOtlpLogRecord` with neither `message` nor `exception` → body is `''`,
   severity defaults to `info` (the SDK caller is expected to set one).
+
+## See also
+
+- [reference/monitor-core.md](../reference/monitor-core.md) — `monitor-core` API reference
+- [reference/dsn.md](../reference/dsn.md) — DSN grammar
+- [QA 02](02-node-wire-contract.md) — wire-contract validation for `monitor-node`

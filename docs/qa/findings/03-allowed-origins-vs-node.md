@@ -1,7 +1,10 @@
 # Finding 03 — `allowedOrigins` forbids node-side use of the SDK
 
-**Severity:** P2 — operational footgun.
-**Discovered:** 2026-06-06 during QA 02 integration pass.
+> Operational footgun: a DSN minted via the SPA's "Create DSN" flow has `allowedOrigins` pre-filled with the SPA host, which then rejects every Node-side fetch with `403`. Mint server DSNs with empty `allowed_origins`.
+> **Status:** known issue (UX split + SDK warn planned for v0.1.1)
+> **Severity:** P2
+> **Discovered:** 2026-06-06 during QA 02 integration pass
+> **Updated:** 2026-06-08
 
 ## What
 
@@ -56,3 +59,10 @@ $ curl -X POST http://localhost:3001/v1/logs \
        -H "Authorization: Bearer nmk_dev_<hex>" -d '{}'
 {}
 ```
+
+## See also
+
+- [reference/dsn.md](../../reference/dsn.md#allowedorigins-rules) — Browser vs Server DSN rules
+- [reference/monitor-node.md](../../reference/monitor-node.md) · [reference/monitor-browser.md](../../reference/monitor-browser.md)
+- [QA 02](../02-node-wire-contract.md) — case #3 demonstrates the 403
+- [guides/operating.md](../../guides/operating.md#step-1--mint-a-dsn) — minting rules

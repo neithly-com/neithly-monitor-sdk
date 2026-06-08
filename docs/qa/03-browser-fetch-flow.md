@@ -1,8 +1,9 @@
 # QA 03 — `@neithly-com/monitor-browser` fetch flow
 
-Verify the browser SDK from a real tab — the auth-web preview is already wired
-to the live backend, so we just open the SPA + paste the QA script in the
-DevTools console.
+> Verify the browser SDK from a real tab — the auth-web preview is wired to the live backend, so we open the SPA + paste the QA script in the DevTools console.
+> **Status:** stable
+> **Owner:** Feature #88+ (monitor-browser wave 1)
+> **Last verified:** 2026-06-06 on PR #123 + #125
 
 ## Pre-condition
 
@@ -64,3 +65,10 @@ console.log('status:', r.status, await r.text());
 After running, refresh the Issues list — the new row appears at the top with
 "just now" timestamp. Realtime SSE has already invalidated the React Query
 cache so the rerender happens without a manual refresh.
+
+## See also
+
+- [reference/monitor-browser.md](../reference/monitor-browser.md) — `monitor-browser` API reference
+- [reference/monitor-react.md](../reference/monitor-react.md) — React bindings layered on top
+- [QA 02](02-node-wire-contract.md) — Node equivalent
+- [Finding 03](findings/03-allowed-origins-vs-node.md) — `allowedOrigins` rules for browser DSNs
