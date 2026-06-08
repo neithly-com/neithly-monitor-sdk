@@ -1,15 +1,27 @@
 # Architecture
 
-This document explains the package boundaries inside `neithly-monitor-sdk` and walks through the data flow of a single `captureException` call from user code all the way to the neithly-monitor backend.
+> Package boundaries inside `neithly-monitor-sdk` + the data flow of a single `captureException` call from user code all the way to the neithly-monitor backend.
+> **Status:** stable
+> **Updated:** 2026-06-08
 
-It is the entry point for new contributors. For the *why* behind specific decisions, follow the cross-links to the ADRs.
+This is the entry point for new contributors. For the *why* behind specific decisions, follow the cross-links to the ADRs.
+
+## Quick reference
+
+| Layer | What it owns | Package |
+|---|---|---|
+| Pure logic | DSN parse, exception shape, scope, breadcrumbs, OTLP envelope | `monitor-core` |
+| Node runtime | OTel `NodeSDK` + DSN auth + ALS scope + framework bindings | `monitor-node` |
+| Browser runtime | fetch + sendBeacon transport + sync scope + auto-instrumentation | `monitor-browser` |
+| React glue | ErrorBoundary, scope hook, react-router v6 | `monitor-react` |
+| CI tooling | `monitor releases create` + `monitor sourcemaps upload` | `monitor-cli` |
 
 ## Goals
 
-1. **One install, one boot call.** Consumer apps should add a single dependency for their runtime and call `Neithly.init({ dsn })`. Everything else is wired internally.
-2. **Sentry-shaped public API.** Operators recognise `captureException`, `addBreadcrumb`, `setUser`, `setTags`, `withScope`. See [ADR-0002](./adr/0002-sentry-shaped-api-over-otel.md).
+1. **One install, one boot call.** Consumer apps add a single dependency for their runtime and call `Neithly.init({ dsn })`. Everything else is wired internally.
+2. **Sentry-shaped public API.** Operators recognise `captureException`, `addBreadcrumb`, `setUser`, `setTags`, `withScope`. See [ADR-0002](../adr/0002-sentry-shaped-api-over-otel.md).
 3. **OTLP/HTTP under the hood.** The backend already speaks OTLP on `/v1/logs`, `/v1/metrics`, `/v1/traces` with DSN bearer auth. We wrap the OTel SDK's official exporters with a DSN-aware auth header rather than rolling our own HTTP client.
-4. **Strict workspace boundaries.** `monitor-core` is the only package that may be imported by every other. Runtime packages (`monitor-node`, `monitor-browser`) do not import each other. Framework bindings live in the runtime package they need (Express/Fastify/Nest inside `monitor-node`, React inside `monitor-react`).
+4. **Strict workspace boundaries.** `monitor-core` is the only package that may be imported by every other. Runtime packages (`monitor-node`, `monitor-browser`) do not import each other. Framework bindings live in the runtime package they need.
 
 ## Package boundaries
 
@@ -51,7 +63,7 @@ It is the entry point for new contributors. For the *why* behind specific decisi
 
 ### Rules
 
-- `monitor-core` has zero runtime dependencies (`@opentelemetry/*` is a peer concept only at the boundary helper level; the actual OTel SDK lives in the runtime packages). It must stay under ~1k LoC of pure logic.
+- `monitor-core` has zero runtime dependencies. It must stay under ~1k LoC of pure logic.
 - `monitor-node` and `monitor-browser` both depend on `monitor-core` and expose the **same** `Neithly` singleton shape so application code is portable between runtimes. The shape is identical; the implementation differs:
   - `monitor-node` uses `AsyncLocalStorage` for `withScope`, batched OTel processors, and OS-level hooks (`process.on('uncaughtException')`).
   - `monitor-browser` uses a synchronous `withScope` (no ALS available), a fetch-based exporter, and `sendBeacon` on `pagehide` for in-flight envelopes.
@@ -64,8 +76,6 @@ It is the entry point for new contributors. For the *why* behind specific decisi
 This is the path a single uncaught error walks from the moment an app calls `Neithly.captureException(err)` to the moment it lands in neithly-monitor's exception store.
 
 ### Step 1 — Scope snapshot
-
-User code:
 
 ```ts
 Neithly.setUser({ id: 'u_42', email: 'alice@example.com' });
@@ -121,7 +131,7 @@ The function is shared between Node and browser. There is exactly one place that
 
 The runtime package wraps the OTel SDK's official `OTLPLogExporter` with two additions:
 
-1. An `Authorization: Bearer <publicKey>` header, where `publicKey` is the 64-hex value parsed from the DSN by `parseDsn` (see [ADR-0001](./adr/0001-dsn-format.md)).
+1. An `Authorization: Bearer <input>` header, where `<input>` is the full plaintext DSN (NOT just the parsed `publicKey` — see [Finding 02](../qa/findings/02-dsn-bearer-shape.md)). The DSN was validated by `parseDsn` (see [ADR-0001](../adr/0001-dsn-format.md)).
 2. The endpoint resolved by `resolveEndpoints(dsnOrigin)` — `/v1/logs`, `/v1/metrics`, `/v1/traces` all derived from the single DSN origin.
 
 On Node, the exporter feeds a `BatchLogRecordProcessor` so multiple `captureException` calls coalesce into one HTTP POST. On browser, the same shape is used, but `sendBeacon` takes over on `pagehide` to flush any in-flight envelope before the tab dies.
@@ -132,37 +142,29 @@ The neithly-monitor backend's `/v1/logs` endpoint validates the bearer token aga
 
 ### Failure modes
 
-- `parseDsn` rejects malformed input with `DSN_MALFORMED` *synchronously inside `init`* — apps fail fast at boot rather than silently dropping events.
-- The exporter retries with the OTel SDK's built-in backoff; on hard failure (4xx that isn't 429) it drops the batch and logs to `console.warn` once. We never block the host app.
-- `flush(timeoutMs)` and `shutdown()` drain queued exporters; tests assert that all in-flight envelopes land before the promise resolves.
+| Failure | Surface | Mitigation |
+|---|---|---|
+| Malformed DSN | `parseDsn` throws `DSN_MALFORMED` synchronously inside `init` | Boot crashes — apps fail fast rather than silently dropping events |
+| 4xx (not 429) on POST | Exporter drops the batch, logs `console.warn` once | Never blocks the host app |
+| 429 / 5xx | OTel SDK built-in backoff retries | Drop after retry budget |
+| `service.name` mismatch | Backend returns `200`, drops record silently | Document loudly; see [Finding 01](../qa/findings/01-service-name-mismatch.md) |
+| Process exit with queued events | `flush(timeoutMs)` and `shutdown()` drain queued exporters | Tests assert all in-flight envelopes land before the promise resolves |
 
 ## Real-world wire contract (post-v0.1 QA findings)
 
-The end-to-end QA pass on 2026-06-06 (see [`docs/qa/`](./qa/)) surfaced three
-contract details that aren't obvious from the OTel spec or the backend
-README. They are documented here so future SDK work doesn't re-discover them:
+The end-to-end QA pass on 2026-06-06 surfaced three contract details that aren't obvious from the OTel spec or the backend README:
 
-1. **`service.name` resource attribute MUST match the project's slug** — the
-   backend's ingest worker silently drops records when this differs, returning
-   `200 {}` to the SDK. Set `init({ serviceName: '<slug>' })` (or pin
-   `service.name` directly on the resource attributes). See
-   [Finding 01](./findings/01-service-name-mismatch.md).
-2. **The DSN bearer is the FULL plaintext** including the `nmk_<env>_` prefix,
-   not just the parsed `publicKey`. Internal SDK state holds the original
-   `input` and uses that as `Authorization: Bearer <input>`. See
-   [Finding 02](./findings/02-dsn-bearer-shape.md).
-3. **DSNs with `allowedOrigins` reject node-side fetches** (Node never sends
-   an `Origin` header). For server-side SDK use, mint the DSN with an empty
-   `allowed_origins` list. The browser SDK never has this problem. See
-   [Finding 03](./findings/03-allowed-origins-vs-node.md).
+1. **`service.name` resource attribute MUST match the project's slug** — the backend's ingest worker silently drops records when this differs, returning `200 {}`. Set `init({ serviceName: '<slug>' })`. See [Finding 01](../qa/findings/01-service-name-mismatch.md).
+2. **The DSN bearer is the FULL plaintext** including the `nmk_<env>_` prefix, not just the parsed `publicKey`. Internal SDK state holds the original `input` and uses that as `Authorization: Bearer <input>`. See [Finding 02](../qa/findings/02-dsn-bearer-shape.md).
+3. **DSNs with `allowedOrigins` reject node-side fetches** (Node never sends an `Origin` header). For server-side SDK use, mint the DSN with an empty `allowed_origins` list. See [Finding 03](../qa/findings/03-allowed-origins-vs-node.md).
 
-End-to-end propagation latency (POST → SPA row visible) measured at ~5 s on
-the local stack, driven entirely by the SPA's SSE channel + TanStack Query
-cache invalidation — no manual reload required.
+End-to-end propagation latency (POST → SPA row visible) measured at ~5 s on the local stack, driven entirely by the SPA's SSE channel + TanStack Query cache invalidation — no manual reload required.
 
-## Related ADRs
+## See also
 
-- [ADR-0001 — DSN format `nmk_<env>_<64 hex>`](./adr/0001-dsn-format.md)
-- [ADR-0002 — Sentry-shaped API over OTel](./adr/0002-sentry-shaped-api-over-otel.md)
-
-Future ADRs (replay, profiling, edge runtimes, mobile) will be filed in `docs/adr/` as the corresponding features are scoped.
+- [reference/monitor-core.md](monitor-core.md) — pure-logic foundation
+- [reference/monitor-node.md](monitor-node.md) · [reference/monitor-browser.md](monitor-browser.md) — runtime SDKs
+- [reference/dsn.md](dsn.md) — DSN format + provisioning
+- [ADR-0001](../adr/0001-dsn-format.md) — DSN format
+- [ADR-0002](../adr/0002-sentry-shaped-api-over-otel.md) — Sentry-shaped API over OTel
+- [QA matrices](../qa/) — wire-contract validation
