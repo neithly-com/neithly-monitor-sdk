@@ -1,64 +1,76 @@
 # DSN
 
-> The credential application code pastes into `Neithly.init({ dsn })`. Identifies the project + environment, authenticates against the neithly-monitor ingest endpoints.
+> The credential application code pastes into `init({ dsn })`. Identifies the project + environment and authenticates against the neithly-monitor OTLP ingest endpoints.
 > **Status:** stable
 > **Source:** `packages/core/src/dsn.ts`
-> **Updated:** 2026-06-08
+> **Updated:** 2026-06-09
 
 ## Quick reference
 
 | What | How |
 |---|---|
-| Format | `nmk_<env>_<64-char lowercase hex>` |
-| `<env>` values | `live`, `staging`, `dev`, `test` |
-| Used as | `Authorization: Bearer <full DSN plaintext>` (NOT just the hex segment) |
+| Format | `nmk_<env>_<64-char lowercase hex>` (legacy bare 64-hex is also accepted) |
+| `<env>` values | `live`, `staging`, `dev` |
 | Parser | `parseDsn(input)` from `@neithly-com/monitor-core` |
-| Failure | Throws `DsnMalformedError` (code `DSN_MALFORMED`) synchronously in `init` |
+| Wire bearer | The parsed **`publicKey`** (the 64-hex segment), sent as `Authorization: Bearer <publicKey>` |
+| Failure | Throws `DsnMalformedError` (`code = 'DSN_MALFORMED'`) synchronously |
 
 ## Grammar
 
 ```
-DSN  ::= 'nmk_' ENV '_' KEY
-ENV  ::= 'live' | 'staging' | 'dev' | 'test'
+DSN  ::= 'nmk_' ENV '_' KEY  |  KEY
+ENV  ::= 'live' | 'staging' | 'dev'
 KEY  ::= [0-9a-f]{64}
 ```
 
-Whitespace is trimmed but not allowed inside the body. Uppercase prefix or hex is rejected. A bare 64-hex value is **also** accepted as a legacy fallback (treated as `env = 'live'` with a one-shot `console.warn`); new tooling always emits the prefixed form.
+| Rule | Detail |
+|---|---|
+| Whitespace | Trimmed surrounding whitespace; embedded whitespace rejected |
+| Casing | Uppercase prefix or hex is rejected (lowercase hex only) |
+| Bare 64-hex | Accepted as a legacy fallback — parses to `{ publicKey, environment: null }` |
+| Unknown env | Anything other than `live` / `staging` / `dev` is rejected |
+| Length | Hex segment must be exactly 64 characters |
 
 ## Parsed shape
 
 ```ts
-type ParsedDsn = {
-  input: string;           // full plaintext — use this as the bearer
-  publicKey: string;       // 64-hex segment — display/env-tagging only
-  environment: 'live' | 'staging' | 'dev' | 'test' | null;
-  origin: string;          // ingest origin resolved from env (or override)
-};
+export type DsnEnvironment = 'live' | 'staging' | 'dev';
+
+export interface ParsedDsn {
+  publicKey: string;
+  environment: DsnEnvironment | null;
+}
 ```
 
 | Field | Use for |
 |---|---|
-| `input` | `Authorization: Bearer ${input}` — the wire credential |
-| `publicKey` | Display in dashboards, tag the env in logs. **Never** send it as bearer alone. |
-| `environment` | Default env tag when `init` doesn't set one |
-| `origin` | Base URL for `resolveEndpoints` |
+| `publicKey` | `Authorization: Bearer ${publicKey}` on every OTLP POST |
+| `environment` | Default `deployment.environment` resource attribute when `init` does not pass one explicitly; `null` for legacy bare-hex DSNs |
 
-> **Footgun:** the parsed `publicKey` is **not** the wire bearer. The backend SHA-256s whatever bearer it receives and matches against the stored hash — which was hashed from the full plaintext `nmk_<env>_<hex>`. See [Finding 02](../qa/findings/02-dsn-bearer-shape.md).
+## Bearer token shape
 
-## Origin resolution
+The runtime SDKs (`monitor-node` / `monitor-browser`) extract `publicKey` from the parsed DSN and use **only that segment** as the bearer:
 
-| `<env>` | Resolved origin (default) |
-|---|---|
-| `live` | `https://ingest.neithly.com` |
-| `staging` | `https://ingest.staging.neithly.com` |
-| `dev` | `http://localhost:3001` |
-| `test` | `http://localhost:3001` |
+```
+Authorization: Bearer <64-char hex>
+```
 
-Override per-app via `init({ dsn, origin: 'https://my-self-host.example.com' })` (e.g. self-hosted deployments).
+This is verified in `packages/node/src/transport/log-exporter.ts`, `trace-exporter.ts`, `metric-exporter.ts`, and the matching browser exporters under `packages/browser/src/transport/`.
+
+## Default ingest origins
+
+`parseDsn` itself does not resolve an origin — that is the runtime SDK's job:
+
+| Runtime | Default ingest origin | Override |
+|---|---|---|
+| `monitor-node` (via `buildNodeSdk`) | Caller supplies `endpoint` explicitly | `buildNodeSdk({ endpoint })` |
+| `monitor-browser` | `https://ingest.neithly.com` | `init({ tunnel: '<your-origin>' })` |
+
+In both cases, the resolved origin is fed through `resolveEndpoints(origin)` from `@neithly-com/monitor-core` to produce `<origin>/v1/logs`, `<origin>/v1/traces`, `<origin>/v1/metrics`.
 
 ## Provisioning
 
-DSNs are minted by the neithly-monitor backend, either via the admin SPA or directly via SQL on the dev stack:
+DSNs are minted by the neithly-monitor backend (admin SPA or SQL on the dev stack). The backend stores a SHA-256 of the plaintext; the plaintext is unrecoverable once written.
 
 ```bash
 docker exec neithly-monitor-postgres-1 psql -U neithly -d neithly_monitor_dev \
@@ -67,11 +79,11 @@ docker exec neithly-monitor-postgres-1 psql -U neithly -d neithly_monitor_dev \
              '<project_id>',
              encode(sha256('nmk_dev_<paste 64 random hex>'::bytea), 'hex'),
              'qa-integration',
-             ARRAY[]::text[],          -- empty for server DSNs (Node has no Origin header)
+             ARRAY[]::text[],
              NOW();"
 ```
 
-The plaintext is what application code uses. The backend only ever stores the SHA-256 — plaintext is unrecoverable once the INSERT lands.
+The plaintext is what application code passes to `init({ dsn })`.
 
 ### `allowedOrigins` rules
 
@@ -80,21 +92,38 @@ The plaintext is what application code uses. The backend only ever stores the SH
 | Browser | The SPA's origin (e.g. `https://app.example.com`) | Browsers always send `Origin`; the pin is a useful guardrail |
 | Node / server | Empty list `[]` | Node never sends `Origin`; a non-empty pin returns `403 ORIGIN_REJECTED` |
 
-See [Finding 03](../qa/findings/03-allowed-origins-vs-node.md) for the failure mode + workaround.
+See [QA finding 03](../qa/findings/03-allowed-origins-vs-node.md) for the failure mode + workaround.
 
 ## Errors
 
-| Code | When |
-|---|---|
-| `DSN_MALFORMED` | `parseDsn` rejects the input (empty, wrong env, short/long hex, uppercase) |
-| `DSN_MISSING` | Backend `/v1/logs` received no `Authorization` header — 401 |
-| `DSN_INVALID` | Backend SHA-256 mismatch (or DSN revoked) — 401 |
-| `ORIGIN_REJECTED` | Backend `OriginCheckMiddleware` rejected — 403 (see Finding 03) |
+| Code | Class / status | When |
+|---|---|---|
+| `DSN_MALFORMED` | `DsnMalformedError` (synchronous throw) | `parseDsn` rejects the input (non-string, empty after trim, unknown env tag, wrong hex length, uppercase, non-hex characters) |
+| `DSN_MISSING` | Backend 401 | OTLP POST arrived without an `Authorization` header |
+| `DSN_INVALID` | Backend 401 | Backend SHA-256 of the bearer did not match any stored hash (DSN revoked or wrong) |
+| `ORIGIN_REJECTED` | Backend 403 | Backend `OriginCheckMiddleware` rejected the request — typically a Node POST against a DSN that has `allowedOrigins` set |
+
+## Example
+
+```ts
+import { parseDsn, DsnMalformedError } from '@neithly-com/monitor-core';
+
+try {
+  const dsn = parseDsn(process.env.NEITHLY_DSN ?? '');
+  console.log(dsn.publicKey, dsn.environment); // → 'aaaa…aaaa', 'dev'
+} catch (err) {
+  if (err instanceof DsnMalformedError) {
+    console.error('Bad DSN at boot — refusing to start:', err.input);
+    process.exit(1);
+  }
+  throw err;
+}
+```
 
 ## See also
 
-- [reference/monitor-core.md](monitor-core.md) — `parseDsn` API
-- [reference/architecture.md](architecture.md) — exporter wiring
+- [reference/monitor-core.md](monitor-core.md) — `parseDsn` API + the rest of the shaping helpers
+- [reference/architecture.md](architecture.md) — where the bearer attaches in the exporter chain
 - [guides/operating.md](../guides/operating.md) — DSN provisioning end-to-end
-- [ADR-0001](../adr/0001-dsn-format.md) — rationale for the format
-- [Finding 02](../qa/findings/02-dsn-bearer-shape.md) · [Finding 03](../qa/findings/03-allowed-origins-vs-node.md)
+- [ADR-0001](../adr/0001-dsn-format.md) — rationale for the `nmk_<env>_<hex>` format
+- [QA finding 02](../qa/findings/02-dsn-bearer-shape.md) · [QA finding 03](../qa/findings/03-allowed-origins-vs-node.md)

@@ -21,15 +21,23 @@ export NODE_AUTH_TOKEN=$(gh auth token)
 echo "@neithly-com:registry=https://npm.pkg.github.com" >> .npmrc
 pnpm add @neithly-com/monitor-node          # or monitor-browser / monitor-react
 
-# Boot in 6 lines
+# Boot in a few lines
 cat <<'TS' > src/monitor.ts
-import { Neithly } from '@neithly-com/monitor-node';
+import { Neithly, buildNodeSdk } from '@neithly-com/monitor-node';
+
 Neithly.init({
   dsn: process.env.NEITHLY_DSN,             // nmk_<env>_<64 hex>
-  serviceName: 'apollo',                    // MUST match project slug
   release: process.env.GIT_SHA,
   environment: process.env.NODE_ENV,
 });
+
+// Wire the OTel transport (sends OTLP/HTTP to /v1/logs).
+buildNodeSdk({
+  dsn: process.env.NEITHLY_DSN,
+  endpoint: 'https://ingest.neithly.com',
+  serviceName: 'apollo',                    // MUST match project slug
+  release: process.env.GIT_SHA,
+}).start();
 TS
 ```
 
