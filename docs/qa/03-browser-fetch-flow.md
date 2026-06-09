@@ -14,7 +14,7 @@
 
 | # | Case | Action | Expected | Observed (2026-06-06) |
 |---|---|---|---|---|
-| 1 | Direct fetch POST from the SPA tab | run [`qa-integration/spa-console-poke.js`](../../qa-integration/spa-console-poke.js) in DevTools | `200 {}` and the new event appears in the open `/issues` page within 5 s | ✅ row `QaSpaError` shown with "just now" timestamp |
+| 1 | Direct fetch POST from the SPA tab | paste a snippet using `fetch` against `/v1/logs` with `Authorization: Bearer <publicKey>` in DevTools | `200 {}` and the new event appears in the open `/issues` page within 5 s | ✅ row `QaSpaError` shown with "just now" timestamp |
 | 2 | SSE channel keeps "connected" | watch top-bar pill before + after the POST | stays `Realtime: connected`; no reconnect | ✅ confirmed |
 | 3 | Cache patcher invalidates list | check React Query devtools after POST | `[ISSUES_QUERY_KEY, ...]` keys go stale → refetched | ✅ visible row, no manual reload |
 | 4 | Origin pin enforced from a different tab | open `http://localhost:5173`, copy the same script | `403 ORIGIN_REJECTED` | ✅ expected (untested in this pass — auth-web is the only available second origin) |

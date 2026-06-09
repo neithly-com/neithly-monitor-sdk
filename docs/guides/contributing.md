@@ -2,7 +2,7 @@
 
 > Develop the SDK locally — pnpm workspace conventions, workspace boundaries, ADR + release process.
 > **Status:** stable
-> **Updated:** 2026-06-08
+> **Updated:** 2026-06-09
 
 ## Who this is for
 
@@ -76,7 +76,7 @@ Promotion `dev → staging → main` is human-approved (org rulesets). Don't ope
 
 ### Architectural decisions
 
-Anything that changes a contract, a package boundary, a wire shape, or introduces a new dependency goes in a new ADR under `docs/adr/NNNN-<title>.md`. Follow the MADR template ([template 6 of the docs-structure convention](../../docs/adr/0001-dsn-format.md) is a worked example). Cross-link the ADR from:
+Anything that changes a contract, a package boundary, a wire shape, or introduces a new dependency goes in a new ADR under `docs/adr/NNNN-<title>.md`. Follow the MADR template — [ADR-0001](../adr/0001-dsn-format.md) is a worked example. Cross-link the ADR from:
 
 - `docs/reference/architecture.md`
 - The reference doc for the affected scope
