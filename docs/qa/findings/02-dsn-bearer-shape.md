@@ -1,7 +1,10 @@
 # Finding 02 — DSN bearer is the FULL plaintext, not the parsed `publicKey`
 
-**Severity:** P2 — documentation gap that confuses SDK authors.
-**Discovered:** 2026-06-06 during QA 02 integration pass.
+> Documentation/naming gap that confuses SDK authors. The runtime SDKs hold the full DSN `input` as the bearer; only the field name needs to change.
+> **Status:** known issue (rename planned for v0.1.1)
+> **Severity:** P2
+> **Discovered:** 2026-06-06 during QA 02 integration pass
+> **Updated:** 2026-06-08
 
 ## What
 
@@ -55,3 +58,9 @@ curl -X POST http://localhost:3001/v1/logs \
   -H "Authorization: Bearer nmk_dev_<64hex>" -H "Content-Type: application/json" -d '{}'
 # → 200 {}
 ```
+
+## See also
+
+- [reference/dsn.md](../../reference/dsn.md) — DSN format + `ParsedDsn` shape
+- [reference/monitor-core.md](../../reference/monitor-core.md#parsedsninput) — `parseDsn` API
+- [QA 02](../02-node-wire-contract.md) — cases #1 / #2 demonstrate the WRONG/RIGHT bearers

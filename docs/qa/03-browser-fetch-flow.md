@@ -1,8 +1,9 @@
 # QA 03 — `@neithly-com/monitor-browser` fetch flow
 
-Verify the browser SDK from a real tab — the auth-web preview is already wired
-to the live backend, so we just open the SPA + paste the QA script in the
-DevTools console.
+> Verify the browser SDK from a real tab — the auth-web preview is wired to the live backend, so we open the SPA + paste the QA script in the DevTools console.
+> **Status:** stable
+> **Owner:** Feature #88+ (monitor-browser wave 1)
+> **Last verified:** 2026-06-06 on PR #123 + #125
 
 ## Pre-condition
 
@@ -13,7 +14,7 @@ DevTools console.
 
 | # | Case | Action | Expected | Observed (2026-06-06) |
 |---|---|---|---|---|
-| 1 | Direct fetch POST from the SPA tab | run [`qa-integration/spa-console-poke.js`](../../qa-integration/spa-console-poke.js) in DevTools | `200 {}` and the new event appears in the open `/issues` page within 5 s | ✅ row `QaSpaError` shown with "just now" timestamp |
+| 1 | Direct fetch POST from the SPA tab | paste a snippet using `fetch` against `/v1/logs` with `Authorization: Bearer <publicKey>` in DevTools | `200 {}` and the new event appears in the open `/issues` page within 5 s | ✅ row `QaSpaError` shown with "just now" timestamp |
 | 2 | SSE channel keeps "connected" | watch top-bar pill before + after the POST | stays `Realtime: connected`; no reconnect | ✅ confirmed |
 | 3 | Cache patcher invalidates list | check React Query devtools after POST | `[ISSUES_QUERY_KEY, ...]` keys go stale → refetched | ✅ visible row, no manual reload |
 | 4 | Origin pin enforced from a different tab | open `http://localhost:5173`, copy the same script | `403 ORIGIN_REJECTED` | ✅ expected (untested in this pass — auth-web is the only available second origin) |
@@ -64,3 +65,10 @@ console.log('status:', r.status, await r.text());
 After running, refresh the Issues list — the new row appears at the top with
 "just now" timestamp. Realtime SSE has already invalidated the React Query
 cache so the rerender happens without a manual refresh.
+
+## See also
+
+- [reference/monitor-browser.md](../reference/monitor-browser.md) — `monitor-browser` API reference
+- [reference/monitor-react.md](../reference/monitor-react.md) — React bindings layered on top
+- [QA 02](02-node-wire-contract.md) — Node equivalent
+- [Finding 03](findings/03-allowed-origins-vs-node.md) — `allowedOrigins` rules for browser DSNs
