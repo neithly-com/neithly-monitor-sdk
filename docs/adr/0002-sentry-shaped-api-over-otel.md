@@ -50,7 +50,7 @@ Chosen option: **3 — Sentry-shaped public API, with `Neithly.getOtelSdk()` as 
 ### Negative Consequences
 
 - **Maintenance burden.** We own a public API and have to evolve it carefully — breaking it is an SDK major bump that ripples through every consumer service. We mitigate by mirroring Sentry's shape as closely as semantics allow, so changes track an established prior art.
-- **Concept-impedance bugs.** A small set of OTel concepts do not have a direct Sentry analogue (e.g. resource attributes vs. tags vs. contexts). We document the mapping table in `docs/architecture.md` and in the per-package READMEs, and we test edge cases (e.g. `setTags` keys that collide with OTel resource attrs are namespaced as `tags.<key>` on the wire).
+- **Concept-impedance bugs.** A small set of OTel concepts do not have a direct Sentry analogue (e.g. resource attributes vs. tags vs. contexts). We document the mapping table in [`docs/reference/architecture.md`](../reference/architecture.md) and in the per-package READMEs, and we test edge cases (e.g. `setTags` keys that collide with OTel resource attrs are namespaced as `tags.<key>` on the wire).
 - **OTel API drift.** When the OTel SDK changes shape, we may need to adapt our internal wiring without breaking our public surface. The `monitor-core` `toOtlpLogRecord` test fixture pins the wire shape and catches drift early.
 - **Dual debugging surface.** When something goes wrong, contributors may need to debug both the Sentry-shaped path and the OTel internals. The architecture doc walks through the full data flow so this stays tractable.
 
@@ -62,6 +62,6 @@ Chosen option: **3 — Sentry-shaped public API, with `Neithly.getOtelSdk()` as 
 
 ## Links
 
-- [Architecture overview](../architecture.md) — full data flow for `captureException`.
+- [Architecture overview](../reference/architecture.md) — full data flow for `captureException`.
 - [ADR-0001 — DSN format](./0001-dsn-format.md) — the credential that the Sentry-shaped `init` accepts.
 - `plans/01-bootstrap.md` — issues #36–#42 (Node) and #69–#71 (Browser) implement the Sentry-shaped public API on top of the OTel transport.

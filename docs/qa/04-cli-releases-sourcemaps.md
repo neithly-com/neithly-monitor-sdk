@@ -1,7 +1,9 @@
 # QA 04 — `@neithly-com/monitor-cli` releases + sourcemaps
 
-Verify `monitor releases create` and `monitor sourcemaps upload` against the
-live backend.
+> Verify `monitor releases create` and `monitor sourcemaps upload` against the live backend.
+> **Status:** stable
+> **Owner:** Feature #88+ (monitor-cli wave 1)
+> **Last verified:** 2026-06-06 on PR #123 + #125
 
 ## Pre-condition
 
@@ -53,3 +55,8 @@ pnpm --filter @neithly-com/monitor-cli exec monitor sourcemaps upload \
 - Invalid glob (`"dist/nope/**"`) → CLI prints "0 files matched" and exits 0.
 - Concurrency cap (`--concurrency 2`) — verify via observed throughput.
 - `NEITHLY_AUTH_TOKEN` unset → CLI prints config error with the env var name.
+
+## See also
+
+- [reference/monitor-cli.md](../reference/monitor-cli.md) — `monitor-cli` API reference
+- [guides/operating.md](../guides/operating.md) — release cuts in CI

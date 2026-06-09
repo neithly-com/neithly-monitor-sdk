@@ -59,6 +59,6 @@ For backward compatibility and developer convenience, `parseDsn` **also** accept
 
 ## Links
 
-- [Architecture overview](../architecture.md#step-4--exporter) — where the parsed public key meets the OTel exporter.
+- [Architecture overview](../reference/architecture.md#step-5--exporter--sender) — where the parsed public key meets the OTel exporter.
 - [ADR-0002 — Sentry-shaped API over OTel](./0002-sentry-shaped-api-over-otel.md) — the public API that consumes the DSN.
 - `plans/01-bootstrap.md` — issues #15 / #16 implement and test `parseDsn`.

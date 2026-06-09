@@ -36,4 +36,11 @@ export default defineWorkspace([
       environment: 'node',
     },
   },
+  {
+    test: {
+      name: 'internal-test-utils',
+      include: ['packages/_internal-test-utils/**/*.spec.ts'],
+      environment: 'node',
+    },
+  },
 ]);

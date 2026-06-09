@@ -1,7 +1,10 @@
 # Finding 01 — Backend silently drops records when `service.name !== project.slug`
 
-**Severity:** P1 — silent data loss with no operator-visible signal.
-**Discovered:** 2026-06-06 during QA 02 integration pass.
+> Silent data loss with no operator-visible signal. Set `init({ serviceName: '<project slug>' })` until backend ships the `partialSuccess` error or relaxes the check.
+> **Status:** known issue (workaround documented)
+> **Severity:** P1
+> **Discovered:** 2026-06-06 during QA 02 integration pass
+> **Updated:** 2026-06-08
 
 ## What
 
@@ -62,6 +65,13 @@ Until the backend changes, the SDK must:
 2. Or document loudly that `init({ serviceName })` MUST equal the project
    slug.
 
-For v0.1 we ship option (2) — `docs/api/init.md` + the per-package READMEs
-both call this out. v0.1.1 will add automatic resolution via a `/me/project`
+For v0.1 we ship option (2) — [reference/monitor-node.md](../../reference/monitor-node.md) +
+[reference/monitor-browser.md](../../reference/monitor-browser.md) + the per-package READMEs
+all call this out. v0.1.1 will add automatic resolution via a `/me/project`
 endpoint once the backend ships it.
+
+## See also
+
+- [QA 02](../02-node-wire-contract.md) — wire-contract matrix that surfaced this
+- [reference/architecture.md](../../reference/architecture.md#failure-modes) — where this sits in the data flow
+- [guides/operating.md](../../guides/operating.md#step-4--triage) — operator triage
