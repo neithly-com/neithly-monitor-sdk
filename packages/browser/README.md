@@ -121,3 +121,53 @@ init({
 
 The tunnel option replaces the default ingest origin so the DSN never
 appears in the network panel and adblockers don't strip the request.
+
+## React adapter (`/react` subpath, since v0.2.0)
+
+A minimal React surface ships under `@neithly-com/monitor-browser/react`
+so SPA hosts don't need to take a second package dependency for the
+basics. `react` and `react-dom` are optional peer deps (`^18 || ^19`).
+
+```tsx
+import { createRoot } from 'react-dom/client';
+import {
+  MonitorProvider,
+  MonitorErrorBoundary,
+  useMonitor,
+} from '@neithly-com/monitor-browser/react';
+
+function App() {
+  const monitor = useMonitor();
+  return <button onClick={() => monitor.captureMessage('clicked')}>go</button>;
+}
+
+createRoot(document.getElementById('root')!).render(
+  <MonitorProvider dsn={import.meta.env.VITE_NEITHLY_DSN}>
+    <MonitorErrorBoundary
+      fallback={(err, reset) => (
+        <div role="alert">
+          <p>{err.message}</p>
+          <button onClick={reset}>Retry</button>
+        </div>
+      )}
+    >
+      <App />
+    </MonitorErrorBoundary>
+  </MonitorProvider>,
+);
+```
+
+| Export | Purpose |
+| --- | --- |
+| `<MonitorProvider dsn={…}>` | Calls `init()` on mount + publishes the client on context. Optional `userResolver`, `environment`, `release`, `tunnel`, `integrations`. |
+| `<MonitorErrorBoundary fallback={…}>` | Render-phase error boundary. Pulls the client from `MonitorContext` (or `client` prop). |
+| `useMonitor()` | Returns the active `MonitorClient`. Throws if no provider is mounted. |
+| `useSetUserEffect(user)` | Apply `setUser(user)` on mount + on change ; clear (`setUser(null)`) on unmount. |
+| `MonitorContext` | The raw React context, exposed for advanced wiring. |
+
+For richer React bindings (react-router navigation breadcrumbs, more
+granular scope hooks), see the standalone
+[`@neithly-com/monitor-react`](../react/README.md) package.
+
+See [`docs/reference/react-adapter.md`](../../docs/reference/react-adapter.md)
+for the full API reference and behaviour notes.

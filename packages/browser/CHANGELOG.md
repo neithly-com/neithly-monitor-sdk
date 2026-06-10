@@ -1,5 +1,31 @@
 # @neithly-com/monitor-browser
 
+## 0.2.0
+
+### Minor Changes
+
+- Add `/react` subpath with a minimal React adapter so SPA hosts can wire
+  the browser SDK from React without taking a second package dependency.
+  - `<MonitorProvider dsn={…}>` — calls `init()` on mount, publishes a
+    `MonitorClient` on context, optional `userResolver` keeps the scope
+    user in sync with your auth context.
+  - `<MonitorErrorBoundary fallback={…}>` — class-component boundary
+    that ships render-phase errors through the active client (provider
+    context → `client` prop → SDK singleton fallback).
+  - `useMonitor()` — pull the active `MonitorClient` out of context.
+    Throws if no provider is mounted, so bootstrap bugs are loud.
+  - `useSetUserEffect(user)` — opt-in hook for hosts that prefer to wire
+    `setUser` themselves from an auth context.
+- `react` and `react-dom` declared as **optional** peer dependencies
+  (`^18 || ^19`). Hosts that don't import from `/react` pay no React
+  cost.
+- `exports` map gains a `./react` entry with separate `.d.ts` / `.mjs` /
+  `.cjs` outputs. `tsup` builds both entries with `external: ['react',
+  'react-dom']`.
+
+See [`docs/reference/react-adapter.md`](../../docs/reference/react-adapter.md)
+for the full API reference and behaviour notes.
+
 ## 0.1.0
 
 ### Minor Changes
