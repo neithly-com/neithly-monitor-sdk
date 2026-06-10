@@ -30,7 +30,7 @@ import { init, captureException } from '@neithly-com/monitor-node';
 
 init({
   dsn: process.env.NEITHLY_DSN!,
-  serviceName: 'apollo',          // ← MUST match the project's slug on the backend
+  serviceName: 'apollo', // ← MUST match the project's slug on the backend
   release: process.env.GIT_SHA,
   environment: process.env.NODE_ENV,
 });
@@ -64,16 +64,16 @@ Neithly.captureMessage('boot complete', 'info');
 
 ## API
 
-| Export | Purpose |
-| --- | --- |
-| `init(options)` | Parse DSN, stash config; idempotent. |
-| `captureException(err, ctx?)` | Ship a thrown value; returns event id. |
-| `captureMessage(msg, level?, ctx?)` | Ship a freeform log; returns event id. |
-| `withScope(fn)` | Run `fn` against a forked, async-isolated scope. |
-| `setUser` / `setTags` / `setContext` / `setExtra` | Mutate the active scope. |
-| `addBreadcrumb(crumb)` | Push onto the bounded ring. |
-| `flush(ms?)` / `shutdown(ms?)` | Drain or tear down the exporter. |
-| `Neithly` | Singleton bundling every call. |
+| Export                                            | Purpose                                          |
+| ------------------------------------------------- | ------------------------------------------------ |
+| `init(options)`                                   | Parse DSN, stash config; idempotent.             |
+| `captureException(err, ctx?)`                     | Ship a thrown value; returns event id.           |
+| `captureMessage(msg, level?, ctx?)`               | Ship a freeform log; returns event id.           |
+| `withScope(fn)`                                   | Run `fn` against a forked, async-isolated scope. |
+| `setUser` / `setTags` / `setContext` / `setExtra` | Mutate the active scope.                         |
+| `addBreadcrumb(crumb)`                            | Push onto the bounded ring.                      |
+| `flush(ms?)` / `shutdown(ms?)`                    | Drain or tear down the exporter.                 |
+| `Neithly`                                         | Singleton bundling every call.                   |
 
 Full types: `packages/node/src/index.ts`.
 
@@ -83,11 +83,7 @@ Full types: `packages/node/src/index.ts`.
 
 ```ts
 import express from 'express';
-import {
-  init,
-  expressRequestHandler,
-  expressErrorHandler,
-} from '@neithly-com/monitor-node';
+import { init, expressRequestHandler, expressErrorHandler } from '@neithly-com/monitor-node';
 
 init({ dsn: process.env.NEITHLY_DSN! });
 
@@ -110,6 +106,73 @@ await app.register(fastifyPlugin, { client: Neithly });
 ```
 
 ### NestJS
+
+#### One-liner adoption (`/nestjs` subpath, recommended since v0.2.0)
+
+```ts
+// main.ts — must be the very first import so the SDK is live before NestJS
+import '@neithly-com/monitor-node/nestjs/preload';
+
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  await app.listen(3000);
+}
+bootstrap();
+```
+
+```ts
+// app.module.ts
+import { Module } from '@nestjs/common';
+import { MonitorModule } from '@neithly-com/monitor-node/nestjs';
+
+@Module({
+  imports: [
+    MonitorModule.forRoot({
+      dsn: process.env.MONITOR_DSN!,
+      env: process.env.MONITOR_ENV ?? process.env.NODE_ENV,
+      serviceName: 'my-service', // ← MUST match the project slug
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+```ts
+// any provider / controller
+import { Injectable } from '@nestjs/common';
+import { MonitorService } from '@neithly-com/monitor-node/nestjs';
+
+@Injectable()
+export class MyService {
+  constructor(private readonly monitor: MonitorService) {}
+
+  doWork() {
+    try {
+      // ...
+    } catch (err) {
+      this.monitor.captureException(err, { route: 'doWork' });
+    }
+  }
+}
+```
+
+What you get:
+
+- **`MonitorService`** — Injectable wrapper around the SDK; calls are
+  try/catch-wrapped so a misbehaving collector never breaks a request.
+- **`MonitorContextInterceptor`** — registered globally; stamps
+  `http.method` / `http.route` / `http.url` / `http.request_id` (+ `teamId`,
+  user identity when `req.auth` is populated) on every captured event.
+- **`preloadMonitor`** — programmatic alternative to the side-effect import,
+  for when you want to pass a custom `serviceName` or env bag.
+
+`@nestjs/common` and `@nestjs/core` are **peer dependencies** (optional). The
+main `@neithly-com/monitor-node` entry stays usable without NestJS installed.
+
+#### Classic `NeithlyModule` (still supported)
 
 ```ts
 import { Module } from '@nestjs/common';
