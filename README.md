@@ -52,15 +52,16 @@ pnpm test
 
 ## What's inside
 
-| Surface | Path | Doc |
-|---|---|---|
-| Shared core (DSN, scope, OTLP envelope) | `packages/core/` | [reference/monitor-core.md](docs/reference/monitor-core.md) |
-| Node SDK (+ Express / Fastify / Nest) | `packages/node/` | [reference/monitor-node.md](docs/reference/monitor-node.md) |
-| Browser SDK (fetch + sendBeacon) | `packages/browser/` | [reference/monitor-browser.md](docs/reference/monitor-browser.md) |
-| React bindings (ErrorBoundary, hooks) | `packages/react/` | [reference/monitor-react.md](docs/reference/monitor-react.md) |
-| CLI (releases + sourcemaps) | `packages/cli/` | [reference/monitor-cli.md](docs/reference/monitor-cli.md) |
-| Architecture + data flow | — | [reference/architecture.md](docs/reference/architecture.md) |
-| DSN format + provisioning | — | [reference/dsn.md](docs/reference/dsn.md) |
+| Surface                                             | Path                        | Doc                                                               |
+| --------------------------------------------------- | --------------------------- | ----------------------------------------------------------------- |
+| Shared core (DSN, scope, OTLP envelope)             | `packages/core/`            | [reference/monitor-core.md](docs/reference/monitor-core.md)       |
+| Node SDK (+ Express / Fastify / Nest)               | `packages/node/`            | [reference/monitor-node.md](docs/reference/monitor-node.md)       |
+| NestJS adoption (one-liner `MonitorModule.forRoot`) | `packages/node/src/nestjs/` | [reference/nestjs-adapter.md](docs/reference/nestjs-adapter.md)   |
+| Browser SDK (fetch + sendBeacon)                    | `packages/browser/`         | [reference/monitor-browser.md](docs/reference/monitor-browser.md) |
+| React bindings (ErrorBoundary, hooks)               | `packages/react/`           | [reference/monitor-react.md](docs/reference/monitor-react.md)     |
+| CLI (releases + sourcemaps)                         | `packages/cli/`             | [reference/monitor-cli.md](docs/reference/monitor-cli.md)         |
+| Architecture + data flow                            | —                           | [reference/architecture.md](docs/reference/architecture.md)       |
+| DSN format + provisioning                           | —                           | [reference/dsn.md](docs/reference/dsn.md)                         |
 
 ## Docs
 

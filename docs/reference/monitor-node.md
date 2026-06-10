@@ -8,19 +8,20 @@
 
 ## Quick reference
 
-| What | How |
-|---|---|
-| Boot the public API | `init({ dsn, release?, environment?, sampling?, integrations? })` |
-| Capture a thrown value | `captureException(err, context?)` → event id |
-| Capture a freeform log | `captureMessage(message, level?, context?)` → event id |
-| Per-request scope (ALS) | `withScope(fn)` — `AsyncLocalStorage`-bound child scope |
-| Mutate the active scope | `setUser` / `setTags` / `setContext` / `setExtra` / `addBreadcrumb` |
-| Drain / tear down | `flush(timeoutMs?)` / `shutdown()` |
-| Build the OTel NodeSDK | `buildNodeSdk({ dsn, endpoint, serviceName, ... })` |
-| Express bindings | `expressRequestHandler()` + `expressErrorHandler()` |
-| Fastify binding | `fastifyPlugin` (use with `client: Neithly`) |
-| NestJS binding | `NeithlyModule.forRoot({ client, options })` |
-| Auto-instrumentation | `installConsoleBreadcrumbs` / `installHttpInstrumentation` / `installUncaughtHandlers` |
+| What                        | How                                                                                                                                                 |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Boot the public API         | `init({ dsn, release?, environment?, sampling?, integrations? })`                                                                                   |
+| Capture a thrown value      | `captureException(err, context?)` → event id                                                                                                        |
+| Capture a freeform log      | `captureMessage(message, level?, context?)` → event id                                                                                              |
+| Per-request scope (ALS)     | `withScope(fn)` — `AsyncLocalStorage`-bound child scope                                                                                             |
+| Mutate the active scope     | `setUser` / `setTags` / `setContext` / `setExtra` / `addBreadcrumb`                                                                                 |
+| Drain / tear down           | `flush(timeoutMs?)` / `shutdown()`                                                                                                                  |
+| Build the OTel NodeSDK      | `buildNodeSdk({ dsn, endpoint, serviceName, ... })`                                                                                                 |
+| Express bindings            | `expressRequestHandler()` + `expressErrorHandler()`                                                                                                 |
+| Fastify binding             | `fastifyPlugin` (use with `client: Neithly`)                                                                                                        |
+| NestJS binding (classic)    | `NeithlyModule.forRoot({ client, options })`                                                                                                        |
+| NestJS adoption (one-liner) | `MonitorModule.forRoot({ dsn, env, serviceName })` from `@neithly-com/monitor-node/nestjs` — see [reference/nestjs-adapter.md](./nestjs-adapter.md) |
+| Auto-instrumentation        | `installConsoleBreadcrumbs` / `installHttpInstrumentation` / `installUncaughtHandlers`                                                              |
 
 ## Install
 
@@ -55,12 +56,12 @@ Neithly.init({ dsn });
 Neithly.captureException(err);
 ```
 
-| Bundled method | Type |
-|---|---|
-| `init` / `captureException` / `captureMessage` | Capture entry points |
-| `addBreadcrumb` / `setUser` / `setTags` / `setContext` / `setExtra` | Scope mutators |
-| `withScope` | ALS-bound child scope |
-| `flush` / `shutdown` | Lifecycle |
+| Bundled method                                                      | Type                  |
+| ------------------------------------------------------------------- | --------------------- |
+| `init` / `captureException` / `captureMessage`                      | Capture entry points  |
+| `addBreadcrumb` / `setUser` / `setTags` / `setContext` / `setExtra` | Scope mutators        |
+| `withScope`                                                         | ALS-bound child scope |
+| `flush` / `shutdown`                                                | Lifecycle             |
 
 ### `init(options)`
 
@@ -99,13 +100,13 @@ export interface SdkConfig {
 }
 ```
 
-| Field | Behaviour |
-|---|---|
-| `dsn` | Required. Validated via `parseDsn` — throws `DsnMalformedError` synchronously on bad input. |
-| `release` | Optional. Becomes `service.version` on every record. |
-| `environment` | Optional. Defaults to the DSN-encoded env (`live` / `staging` / `dev`) when omitted; remains `undefined` for legacy bare-hex DSNs. |
+| Field          | Behaviour                                                                                                                                               |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dsn`          | Required. Validated via `parseDsn` — throws `DsnMalformedError` synchronously on bad input.                                                             |
+| `release`      | Optional. Becomes `service.version` on every record.                                                                                                    |
+| `environment`  | Optional. Defaults to the DSN-encoded env (`live` / `staging` / `dev`) when omitted; remains `undefined` for legacy bare-hex DSNs.                      |
 | `integrations` | Optional. Free-form `{ name }[]` carried in state; actual integration wiring is performed by the `install*` helpers below or by the framework bindings. |
-| `sampling` | Optional. Carried in state; the transport feature decides how to apply it (`buildNodeSdk` uses `tracesSampleRate` via `TraceIdRatioBasedSampler`). |
+| `sampling`     | Optional. Carried in state; the transport feature decides how to apply it (`buildNodeSdk` uses `tracesSampleRate` via `TraceIdRatioBasedSampler`).      |
 
 `init()` itself does **not** wire transport. Use `buildNodeSdk()` (below) to assemble a real `NodeSDK`, or call `_setProcessorForTest` from your test harness to drive the seam directly.
 
@@ -130,12 +131,12 @@ export interface CaptureContext {
 
 `context` is shallow-merged on top of the active scope snapshot:
 
-| Slot | Merge behaviour |
-|---|---|
-| `user` | Replace if defined; `null` clears |
-| `tags` | Per-key merge (override-wins) |
-| `contexts` | Per-namespace replace |
-| `extras` | Per-key merge |
+| Slot          | Merge behaviour                         |
+| ------------- | --------------------------------------- |
+| `user`        | Replace if defined; `null` clears       |
+| `tags`        | Per-key merge (override-wins)           |
+| `contexts`    | Per-namespace replace                   |
+| `extras`      | Per-key merge                           |
 | `breadcrumbs` | Carried from the active scope unchanged |
 
 Safe to call before `init()` — the default no-op processor silently drops the record.
@@ -193,10 +194,10 @@ export function flush(timeoutMs?: number): Promise<boolean>;
 export function shutdown(): Promise<void>;
 ```
 
-| Function | Behaviour |
-|---|---|
+| Function            | Behaviour                                                                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `flush(timeoutMs?)` | Resolves `true` when the processor drained within `timeoutMs`, `false` otherwise. With the default no-op processor, resolves `true` immediately. |
-| `shutdown()` | Calls `processor.shutdown?.()` if present; otherwise resolves immediately. |
+| `shutdown()`        | Calls `processor.shutdown?.()` if present; otherwise resolves immediately.                                                                       |
 
 ### State helpers
 
@@ -210,9 +211,9 @@ export function getActiveScope(): Scope;
 
 ### Test seams (prefixed `_`)
 
-| Export | Purpose |
-|---|---|
-| `_resetStateForTest()` | Clear module state — config, scope, ALS, processor. |
+| Export                            | Purpose                                                                       |
+| --------------------------------- | ----------------------------------------------------------------------------- |
+| `_resetStateForTest()`            | Clear module state — config, scope, ALS, processor.                           |
 | `_setProcessorForTest(processor)` | Replace the in-memory log record processor; pass `null` to restore the no-op. |
 
 Both live in `packages/node/src/api/state.ts`. Production code should not import them.
@@ -246,10 +247,10 @@ export interface BuildNodeSdkOptions {
 
 Resource attributes set on the SDK:
 
-| Semconv | Source |
-|---|---|
-| `service.name` | `options.serviceName` |
-| `service.version` | `options.release` (only when defined) |
+| Semconv                       | Source                                                                      |
+| ----------------------------- | --------------------------------------------------------------------------- |
+| `service.name`                | `options.serviceName`                                                       |
+| `service.version`             | `options.release` (only when defined)                                       |
 | `deployment.environment.name` | `options.environment ?? parseDsn(dsn).environment` (only when one resolves) |
 
 ### Exporter factories
@@ -317,10 +318,10 @@ export type ExpressErrorMiddleware = (
 ) => void;
 ```
 
-| Middleware | Behaviour |
-|---|---|
+| Middleware                | Behaviour                                                                                                                                                                                                                                              |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `expressRequestHandler()` | Forks the active scope, tags it with `method`, `url` (or `originalUrl`), and `requestId` (from `X-Request-Id`), binds via ALS for the rest of the request, and pushes a `response` breadcrumb on `res.on('finish')` carrying `{ status, durationMs }`. |
-| `expressErrorHandler()` | Captures errors with `status` / `statusCode` `>= 500` or unset. Always forwards via `next(err)` so Express renders its default error response. |
+| `expressErrorHandler()`   | Captures errors with `status` / `statusCode` `>= 500` or unset. Always forwards via `next(err)` so Express renders its default error response.                                                                                                         |
 
 The request handler is structurally typed against `ReqLike` / `ResLike` — it works under any Express-compatible router (e.g. `connect`).
 
@@ -362,11 +363,11 @@ export interface FastifyPluginClient {
 
 Tags applied to the request-scoped scope:
 
-| Tag | Source |
-|---|---|
-| `http.method` | `request.method` |
-| `http.url` | `request.url` |
-| `http.route` | `request.routeOptions.url` (only when the route matched) |
+| Tag           | Source                                                   |
+| ------------- | -------------------------------------------------------- |
+| `http.method` | `request.method`                                         |
+| `http.url`    | `request.url`                                            |
+| `http.route`  | `request.routeOptions.url` (only when the route matched) |
 
 `shouldCaptureFastifyError(err)` returns `true` for any non-object error and for objects whose `statusCode` is missing, non-numeric, or `>= 500`. Exported so other bindings can mirror the policy.
 
@@ -431,11 +432,11 @@ export class NeithlyInterceptor implements NestInterceptor;
 
 **Wiring:**
 
-| Provider | Role |
-|---|---|
-| `NEITHLY_CLIENT` | Injection token for the user-supplied `NeithlyClient` (the `Neithly` singleton satisfies it structurally) |
-| `NeithlyBootstrapService` | `onApplicationBootstrap` hook that calls `client.init(options)` exactly once |
-| `APP_FILTER` → `NeithlyExceptionFilter` | Captures non-`HttpException` errors and `HttpException` with status `>= 500` |
+| Provider                                 | Role                                                                                                                                      |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEITHLY_CLIENT`                         | Injection token for the user-supplied `NeithlyClient` (the `Neithly` singleton satisfies it structurally)                                 |
+| `NeithlyBootstrapService`                | `onApplicationBootstrap` hook that calls `client.init(options)` exactly once                                                              |
+| `APP_FILTER` → `NeithlyExceptionFilter`  | Captures non-`HttpException` errors and `HttpException` with status `>= 500`                                                              |
 | `APP_INTERCEPTOR` → `NeithlyInterceptor` | Opens a `client.withScope(...)` per request, tags `http.method` / `http.url` / `http.request_id`, stamps `http.status_code` on `finalize` |
 
 The interceptor also stashes the active scope on the request object under `NEITHLY_REQUEST_SCOPE_KEY` so the filter can replay tags at capture time (Nest's `AsyncResource.bind` snapshots pre-date the interceptor's `withScope`).
@@ -476,22 +477,18 @@ Call site: anywhere after `init()`. Each returns an uninstaller.
 
 **Source:** `packages/node/src/integrations/`
 
-| Installer | What it does |
-|---|---|
-| `installConsoleBreadcrumbs(addBreadcrumb)` | Monkey-patches `console.log` / `.info` / `.warn` / `.error` to push a `console` breadcrumb (level: `info` / `info` / `warning` / `error`). Originals still fire. |
+| Installer                                   | What it does                                                                                                                                                                                                 |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `installConsoleBreadcrumbs(addBreadcrumb)`  | Monkey-patches `console.log` / `.info` / `.warn` / `.error` to push a `console` breadcrumb (level: `info` / `info` / `warning` / `error`). Originals still fire.                                             |
 | `installHttpInstrumentation(addBreadcrumb)` | Wraps `@opentelemetry/instrumentation-http` to push an `http` breadcrumb with `{ method, url, status, durationMs }` per outgoing request. Returns a no-op uninstaller if the optional OTel deps are missing. |
-| `installUncaughtHandlers(captureFn)` | Adds `process.on('uncaughtException')` + `process.on('unhandledRejection')` listeners that call `captureFn(err)`, then re-emit the event so Node's default behaviour still fires. |
+| `installUncaughtHandlers(captureFn)`        | Adds `process.on('uncaughtException')` + `process.on('unhandledRejection')` listeners that call `captureFn(err)`, then re-emit the event so Node's default behaviour still fires.                            |
 
 **Signatures:**
 
 ```ts
-export function installConsoleBreadcrumbs(
-  addBreadcrumb: (b: Breadcrumb) => void,
-): () => void;
+export function installConsoleBreadcrumbs(addBreadcrumb: (b: Breadcrumb) => void): () => void;
 
-export function installHttpInstrumentation(
-  addBreadcrumb: (b: Breadcrumb) => void,
-): () => void;
+export function installHttpInstrumentation(addBreadcrumb: (b: Breadcrumb) => void): () => void;
 
 export function installUncaughtHandlers(captureFn: (err: unknown) => void): () => void;
 ```
@@ -514,10 +511,10 @@ installUncaughtHandlers(Neithly.captureException);
 
 ## Errors
 
-| Code | Surface | When |
-|---|---|---|
-| `DSN_MALFORMED` | `DsnMalformedError` thrown synchronously inside `init()` | DSN does not parse |
-| Backend `401 DSN_INVALID` / `403 ORIGIN_REJECTED` / `413 PAYLOAD_TOO_LARGE` | OTel exporter logs (after retry budget) | Surfaced through the underlying `@opentelemetry/exporter-*-otlp-http` retry machinery; non-fatal to the host process |
+| Code                                                                        | Surface                                                  | When                                                                                                                 |
+| --------------------------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `DSN_MALFORMED`                                                             | `DsnMalformedError` thrown synchronously inside `init()` | DSN does not parse                                                                                                   |
+| Backend `401 DSN_INVALID` / `403 ORIGIN_REJECTED` / `413 PAYLOAD_TOO_LARGE` | OTel exporter logs (after retry budget)                  | Surfaced through the underlying `@opentelemetry/exporter-*-otlp-http` retry machinery; non-fatal to the host process |
 
 ## See also
 
