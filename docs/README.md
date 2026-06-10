@@ -9,7 +9,8 @@
 | `monitor-core` | Pure-logic foundation: DSN parse, exception shape, scope, breadcrumb ring, endpoint resolution, OTLP envelope helpers | [reference/monitor-core.md](reference/monitor-core.md) |
 | `monitor-node` | Node SDK + `buildNodeSdk` (OTel) + Express/Fastify/Nest bindings; `AsyncLocalStorage`-backed scope | [reference/monitor-node.md](reference/monitor-node.md) |
 | `monitor-browser` | Browser SDK; hand-rolled fetch + sendBeacon exporters; sync `withScope`; DOM auto-instrumentation | [reference/monitor-browser.md](reference/monitor-browser.md) |
-| `monitor-react` | `<NeithlyErrorBoundary>`, `useNeithlyScope`, react-router v6/v7 navigation breadcrumbs | [reference/monitor-react.md](reference/monitor-react.md) |
+| `monitor-browser/react` | React adapter shipped on the browser SDK: `<MonitorProvider>`, `<MonitorErrorBoundary>`, `useMonitor()` (since v0.2.0) | [reference/react-adapter.md](reference/react-adapter.md) |
+| `monitor-react` | Standalone React package: `<NeithlyErrorBoundary>`, `useNeithlyScope`, react-router v6/v7 navigation breadcrumbs | [reference/monitor-react.md](reference/monitor-react.md) |
 | `monitor-cli` | `monitor` binary (placeholders in v0.1) + internal `releases create` / `sourcemaps upload` implementations | [reference/monitor-cli.md](reference/monitor-cli.md) |
 | architecture | Package boundaries + `captureException` data flow end-to-end | [reference/architecture.md](reference/architecture.md) |
 | dsn | DSN format, parsing rules, provisioning, bearer shape | [reference/dsn.md](reference/dsn.md) |

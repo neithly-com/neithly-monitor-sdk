@@ -1,7 +1,7 @@
 {
   "name": "@neithly-com/monitor-browser",
-  "version": "0.1.0",
-  "description": "Browser SDK for neithly-monitor — fetch-based OTLP exporter, Sentry-shaped public API, window.onerror + fetch / XHR / console instrumentation.",
+  "version": "0.2.0",
+  "description": "Browser SDK for neithly-monitor — fetch-based OTLP exporter, Sentry-shaped public API, window.onerror + fetch / XHR / console instrumentation, plus an optional `/react` subpath (MonitorProvider + MonitorErrorBoundary + useMonitor).",
   "license": "UNLICENSED",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -12,6 +12,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.mjs",
+      "require": "./dist/react.cjs"
     }
   },
   "files": [
@@ -28,7 +33,25 @@
   "dependencies": {
     "@neithly-com/monitor-core": "workspace:*"
   },
+  "peerDependencies": {
+    "react": "^18 || ^19",
+    "react-dom": "^18 || ^19"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
   "devDependencies": {
-    "jsdom": "^29.1.1"
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "jsdom": "^29.1.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   }
 }

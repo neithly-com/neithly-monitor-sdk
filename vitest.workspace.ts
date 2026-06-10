@@ -18,7 +18,7 @@ export default defineWorkspace([
   {
     test: {
       name: 'browser',
-      include: ['packages/browser/**/*.spec.ts'],
+      include: ['packages/browser/**/*.spec.{ts,tsx}'],
       environment: 'jsdom',
     },
   },
